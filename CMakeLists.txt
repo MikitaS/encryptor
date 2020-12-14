@@ -17,7 +17,7 @@ find_program( CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executab
 		message(FATAL_ERROR "clang-tidy not found. Please install the toolchain or add it to the PATH") 
         else() 
 		message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=.*" "-warnings-as-errors=.*" "-header-filter=.*") 
+                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=file" "-warnings-as-errors=file" "-header-filter=.*") 
 endif()
 
 project(encryptor)
@@ -38,3 +38,5 @@ add_custom_target(
 	${PROJECT_SOURCE_DIR}/${SOURCES}
 	${PROJECT_SOURCE_DIR}/${HEADERS}
 )
+
+add_dependencies(encryptor clang_tidy)

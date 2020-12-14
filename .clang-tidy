@@ -16,3 +16,4 @@ CheckOptions:
     value:           CamelCase
   - key:             readability-identifier-naming.IgnoreMainLikeFunctions
     value:           1
+WarningsAsErrors: '-*,clang-diagnostic-*,llvm-*,misc-*,-misc-unused-parameters,-misc-non-private-member-variables-in-classes,readability-identifier-naming'
