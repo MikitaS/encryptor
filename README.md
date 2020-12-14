@@ -1,1 +1,16 @@
-# encryptor
+# Encryptor
+
+# Pre-requirements: 
+clang++
+clang-format
+clang-tidy
+make
+cmake
+
+# Build:
+cd <SOURCE_DIR> 
+mkdir build && cd build
+make -j8 encryptor
+
+# Before commiting:
+make -j8 clang_format
