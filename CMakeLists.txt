@@ -44,4 +44,4 @@ add_custom_target(
 	${HEADERS}
 )
 
-#add_dependencies(encryptor clang_tidy)
+add_dependencies(encryptor clang_tidy)
