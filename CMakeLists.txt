@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Here must be declarated all .cpp .h files in the project 
-set(SOURCES main.cpp)
-set(HEADERS include/encryptor.h)
+set(SOURCES 
+        ${CMAKE_SOURCE_DIR}/main.cpp
+	${CMAKE_SOURCE_DIR}/libs/cpuid.cpp)
+
+set(HEADERS 
+	${CMAKE_SOURCE_DIR}/include/encryptor.h
+	${CMAKE_SOURCE_DIR}/include/cpuid.h)
 
 find_program( CLANG_FORMAT_EXE NAMES "clang-format" DOC "Path to clang-format executable" )
         if(NOT CLANG_FORMAT_EXE) 
@@ -22,21 +27,21 @@ endif()
 
 project(encryptor)
 add_executable(encryptor ${SOURCES})
-target_include_directories(encryptor PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(encryptor PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_custom_target(
         clang_tidy
         ${DO_CLANG_TIDY}
-        ${PROJECT_SOURCE_DIR}/${SOURCES}
+        ${SOURCES}
         --
-        -I${PROJECT_SOURCE_DIR}/include
+        -I${CMAKE_SOURCE_DIR}/include
         )
 
 add_custom_target(
         clang_format
 	${DO_CLANG_FORMAT}
-	${PROJECT_SOURCE_DIR}/${SOURCES}
-	${PROJECT_SOURCE_DIR}/${HEADERS}
+	${SOURCES}
+	${HEADERS}
 )
 
 add_dependencies(encryptor clang_tidy)
