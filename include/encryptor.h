@@ -1,17 +1,23 @@
-#pragma once
+#ifndef ENCRYPTOR_H
+#define ENCRYPTOR_H
 
 #include <iostream>
 #include <string>
 
 namespace encryptor {
 
-enum error { CORRECT, KEY_ERROR, DATA_ERROR };
+enum Error { CORRECT, KEY_ERROR, DATA_ERROR };
 
 class AbstractEncryptor {
-public:
-  static encryptor::error crypt(/*params here*/);
-  static encryptor::error decrypt(/*params here*/);
-  static encryptor::error keygen(/*params here*/);
+   public:
+    static encryptor::Error crypt(
+        /*params here*/);
+    static encryptor::Error decrypt(
+        /*params here*/);
+    static encryptor::Error keygen(
+        /*params here*/);
 };
 
-} // namespace encryptor
+}  // namespace encryptor
+
+#endif  // ENCRYPTOR_H
