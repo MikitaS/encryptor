@@ -47,6 +47,17 @@ class CPUID {
     uint32_t regs[4];
 };
 
+static inline void native_cpuid(
+    unsigned int* eax, unsigned int* ebx,
+    unsigned int* ecx, unsigned int* edx) {
+    /* ecx is often an input as well as an output.
+     */
+    asm volatile("cpuid"
+                 : "=a"(*eax), "=b"(*ebx),
+                   "=c"(*ecx), "=d"(*edx)
+                 : "0"(*eax), "2"(*ecx));
+}
+
 }  // namespace hardware_identification
 
 #endif  // CPUID_H
