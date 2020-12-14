@@ -4,9 +4,13 @@
 #include "encryptor.h"
 
 int main() {
-    std::cout
-        << ">>"
-        << hardware_identification::GetCPUId()
-        << "<<" << std::endl;
+    std::vector<uint32_t> cpu_id =
+        hardware_identification::GetCPUId();
+
+    for (auto it = cpu_id.begin();
+         it != cpu_id.end(); ++it) {
+        std::cout << *it << ' ';
+    }
+    std::cout << std::endl;
     return 0;
 }

@@ -1,42 +1,18 @@
 #include "cpuid.h"
 
-#include <stdio.h>
+#define REGISTER_CALL_DEPTH 6
 
-std::string hardware_identification::GetCPUId() {
-    unsigned eax, ebx, ecx, edx;
+std::vector<uint32_t>
+hardware_identification::GetCPUId() {
+    std::vector<uint32_t> id_key;
 
-    eax = 1; /* processor info and feature bits */
-    native_cpuid(&eax, &ebx, &ecx, &edx);
+    for (int i = 0; i < REGISTER_CALL_DEPTH;
+         i++) {
+        hardware_identification::CPUID cpu_id(i);
 
-    printf("stepping %d\n", eax & 0xF);
-    printf("model %d\n", (eax >> 4) & 0xF);
-    printf("family %d\n", (eax >> 8) & 0xF);
-    printf("processor type %d\n",
-           (eax >> 12) & 0x3);
-    printf("extended model %d\n",
-           (eax >> 16) & 0xF);
-    printf("extended family %d\n",
-           (eax >> 20) & 0xFF);
-
-    /* EDIT */
-    eax = 3; /* processor serial number */
-    native_cpuid(&eax, &ebx, &ecx, &edx);
-
-    /** see the CPUID Wikipedia article on which
-       models return the serial number in which
-       registers. The example here is for
-        Pentium III */
-    printf("serial number 0x%08x%08x\n", edx,
-           ecx);
-
-    std::string hwid_cpu;
-    hardware_identification::CPUID cpu_id(
-        static_cast<int>(false));
-    hwid_cpu += std::string(
-        (const char*)&cpu_id.EBX(), 4);
-    hwid_cpu += std::string(
-        (const char*)&cpu_id.EDX(), 4);
-    hwid_cpu += std::string(
-        (const char*)&cpu_id.ECX(), 4);
-    return hwid_cpu;
+        id_key.push_back(cpu_id.EBX());
+        id_key.push_back(cpu_id.EDX());
+        id_key.push_back(cpu_id.ECX());
+    }
+    return id_key;
 }
