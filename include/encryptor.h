@@ -17,6 +17,22 @@ typedef unsigned __int8 uint8_t;
 #include <cstdint>
 #endif
 
+#define CRITICAL_ENCRYPTOR_CHECK(EXPRESSION)                                                       \
+    switch (EXPRESSION) {                                                                          \
+        case encryptor::Error::CORRECT:                                                            \
+            break;                                                                                 \
+        case encryptor::Error::KEY_ERROR:                                                          \
+            std::cerr << "SOMETHING WRONG WITH KEY.\n FILE: " << __FILE__ << " LINE: " << __LINE__ \
+                      << "\nAborting process.." << std::endl;                                      \
+            abort();                                                                               \
+        case encryptor::Error::DATA_ERROR:                                                         \
+            std::cerr << "SOMETHING WRONG WITH DATA. \n FILE: " << __FILE__                        \
+                      << " LINE: " << __LINE__ << "\nAborting process.." << std::endl;             \
+            abort();                                                                               \
+        default:                                                                                   \
+            break;                                                                                 \
+    }
+
 namespace encryptor {
 
 enum Error { CORRECT, KEY_ERROR, DATA_ERROR };

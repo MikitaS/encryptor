@@ -2,6 +2,7 @@
 
 #include "cpuid.h"
 #include "encryptor.h"
+#include "password.h"
 
 template <typename T>
 void PrintVectorUnsigned(std::vector<T> vctr, const std::string& comment) {
@@ -14,13 +15,34 @@ void PrintVectorUnsigned(std::vector<T> vctr, const std::string& comment) {
 
 int main() {
     std::vector<uint32_t> cpu_id = hardware_identification::GetHWID();
-    std::vector<uint8_t> hash;
+    std::vector<uint8_t> hash_cpu;
+    std::vector<uint8_t> hash_key;
+    std::string str_password;
+
+    std::cout << "Please, create a password." << std::endl;
+    std::cin >> str_password;
+
+    while (true) {
+        if (encryptor::CheckPasswordSafety(str_password)) {
+            std::cout << "Processing..." << std::endl;
+            break;
+        } else {
+            std::cout << "Unsafe password, please create new" << std::endl;
+            std::cout << "Password must contain more than 8 characters, at least:\n-- 1 digit\n-- "
+                         "1 downcase symbol\n-- 1 uppercase symbol\n-- 1 special symbol"
+                      << std::endl;
+            std::cout << "New password:\n>>";
+            std::cin >> str_password;
+        }
+    }
 
     PrintVectorUnsigned<uint32_t>(cpu_id, "HWID:");
 
-    encryptor::AbstractEncryptor::hashgen(&hash, cpu_id);
+    CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::hashgen(&hash_cpu, cpu_id));
+    PrintVectorUnsigned<uint8_t>(hash_cpu, "HWID hash by SHA1:");
 
-    PrintVectorUnsigned<uint8_t>(hash, "HWID hash by SHA1:");
+    CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::hashgen(&hash_key, str_password));
+    PrintVectorUnsigned<uint8_t>(hash_key, "password hash by SHA1:");
 
     return 0;
 }

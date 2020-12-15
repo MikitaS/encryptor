@@ -4,10 +4,12 @@ cmake_minimum_required(VERSION 3.13)
 set(SOURCES 
         ${CMAKE_SOURCE_DIR}/main.cpp
         ${CMAKE_SOURCE_DIR}/libs/cpuid.cpp
-        ${CMAKE_SOURCE_DIR}/encryptor/encryptor.cpp)
+        ${CMAKE_SOURCE_DIR}/encryptor/encryptor.cpp
+        ${CMAKE_SOURCE_DIR}/libs/password.cpp)
 
 set(HEADERS 
-	${CMAKE_SOURCE_DIR}/include/encryptor.h
+        ${CMAKE_SOURCE_DIR}/include/encryptor.h
+        ${CMAKE_SOURCE_DIR}/include/password.h
 	${CMAKE_SOURCE_DIR}/include/cpuid.h)
 
 find_program( CLANG_FORMAT_EXE NAMES "clang-format" DOC "Path to clang-format executable" )

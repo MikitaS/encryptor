@@ -1,9 +1,16 @@
 #include "encryptor.h"
 
+#include <cassert>
+
 namespace encryptor {
 
 encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash,
                                             const std::vector<uint32_t>& key) {
+    assert(hash);
+    if (key.size() < 2) {
+        return Error::KEY_ERROR;
+    }
+
     uint32_t tmp = 0;
     uint8_t* p_tmp = nullptr;
     std::vector<unsigned char> reinterpret_key;
@@ -41,6 +48,27 @@ encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash,
 }
 
 encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash, const std::string& key) {
+    assert(hash);
+    if (key.length() < 8) {
+        return Error::KEY_ERROR;
+    }
+
+    uint32_t key_size = key.length();
+    const unsigned char* key_data = reinterpret_cast<const unsigned char*>(key.c_str());
+    unsigned char* hash_data = new unsigned char[key_size];
+
+    for (int i = 0; i < key_size; ++i) {
+        hash_data[i] = 0;
+    }
+
+    SHA1(key_data, key_size, hash_data);
+
+    for (int i = 0; i < key_size; ++i) {
+        if (hash_data[i] != 0) {
+            hash->push_back(hash_data[i]);
+        }
+    }
+
     return encryptor::Error::CORRECT;
 }
 
