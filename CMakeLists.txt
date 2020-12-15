@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 
 # Here must be declarated all .cpp .h files in the project 
 set(SOURCES 
         ${CMAKE_SOURCE_DIR}/main.cpp
-	${CMAKE_SOURCE_DIR}/libs/cpuid.cpp)
+        ${CMAKE_SOURCE_DIR}/libs/cpuid.cpp
+        ${CMAKE_SOURCE_DIR}/encryptor/encryptor.cpp)
 
 set(HEADERS 
 	${CMAKE_SOURCE_DIR}/include/encryptor.h
@@ -28,6 +29,7 @@ endif()
 project(encryptor)
 add_executable(encryptor ${SOURCES})
 target_include_directories(encryptor PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(encryptor PUBLIC ssl crypto)
 
 add_custom_target(
         clang_tidy
@@ -35,6 +37,7 @@ add_custom_target(
         ${SOURCES}
         --
         -I${CMAKE_SOURCE_DIR}/include
+        -lcrypto
         )
 
 add_custom_target(

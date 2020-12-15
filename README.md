@@ -9,6 +9,8 @@ clang-tidy
 
 make
 
+libssl-dev
+
 cmake
 
 # Build:
