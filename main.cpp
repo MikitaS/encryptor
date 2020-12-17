@@ -44,5 +44,13 @@ int main() {
     CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::hashgen(&hash_key, str_password));
     PrintVectorUnsigned<uint8_t>(hash_key, "password hash by SHA1:");
 
+    const std::string pt =
+        "Hello, world! Password must contain more than 8 characters, at least:! We loop over all "
+        "sections in the ELF object. Function elf nextscn wil";
+    std::string ct;
+    encryptor::AbstractEncryptor::crypt(hash_key, pt, &ct);
+    std::cout << ct << std::endl;
+    encryptor::AbstractEncryptor::decrypt();
+
     return 0;
 }

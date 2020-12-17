@@ -39,7 +39,8 @@ enum Error { CORRECT, KEY_ERROR, DATA_ERROR };
 
 class AbstractEncryptor {
    public:
-    static encryptor::Error crypt();
+    static encryptor::Error crypt(const std::vector<uint8_t>& key, const std::string& pt,
+                                  std::string* ct);
     static encryptor::Error decrypt();
 
     static encryptor::Error hashgen(std::vector<uint8_t>* hash, const std::vector<uint32_t>& key);

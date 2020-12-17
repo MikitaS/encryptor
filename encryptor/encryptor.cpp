@@ -1,8 +1,58 @@
 #include "encryptor.h"
 
 #include <cassert>
+#include <list>
 
 namespace encryptor {
+
+encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const std::string& pt,
+                                          std::string* ct) {
+    struct Column {
+        uint8_t num = 0;
+        std::vector<char> letters;
+    };
+
+    uint32_t keySize = key.size();
+    uint32_t ptSize = pt.size();
+    uint32_t clsNum = (ptSize < keySize ? ptSize : keySize);
+    if(clsNum)
+    {
+        return encryptor::Error::DATA_ERROR;
+    }
+
+    std::vector<Column*> cls;
+
+    for (uint32_t i = 0; i < clsNum; ++i) {
+        Column* tmp = new Column;
+        tmp->num = key[i];
+        cls.push_back(tmp);
+    }
+
+    uint32_t cur = 0;
+    for (auto it : pt) {
+        cls[cur]->letters.push_back(it);
+        cur++;
+        if (cur == clsNum) {
+            cur = 0;
+        }
+    }
+
+    std::list<Column*> myList(cls.begin(), cls.end());
+    myList.sort([](Column* x, Column* y) { return x->num < y->num; });
+
+    for (auto* i : myList) {
+        for (auto j : i->letters) {
+            ct->push_back(j);
+        }
+    }
+
+    for (auto* i : cls) {
+        delete i;
+    }
+
+    return encryptor::Error::CORRECT;
+}
+encryptor::Error AbstractEncryptor::decrypt() { return encryptor::Error::CORRECT; }
 
 encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash,
                                             const std::vector<uint32_t>& key) {
