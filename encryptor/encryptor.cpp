@@ -17,7 +17,7 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
     uint32_t keySize = key.size();
     uint32_t ptSize = pt.size();
     uint32_t clsNum = (ptSize < keySize ? ptSize : keySize);
-    if (clsNum) {
+    if (!clsNum) {
         return encryptor::Error::DATA_ERROR;
     }
 

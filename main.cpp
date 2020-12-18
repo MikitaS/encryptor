@@ -1,4 +1,6 @@
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "cpuid.h"
 #include "encryptor.h"
@@ -13,7 +15,38 @@ void PrintVectorUnsigned(std::vector<T> vctr, const std::string& comment) {
     std::cout << std::endl;
 }
 
-int main() {
+std::string ReadFile(const std::string& file_name) {
+    std::ifstream f(file_name);
+    std::stringstream ss;
+    ss << f.rdbuf();
+    return ss.str();
+}
+
+void WriteFile(const std::string& file_name, const std::string& text) {
+    std::ofstream out(file_name);
+    out << text;
+}
+
+int main(int argc, char** argv) {
+    if (argc != 4) {
+        std::cout << "Invalid params" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <input file> <output file> \"crypt\"/\"decrypt\""
+                  << std::endl;
+        exit(0);
+    }
+
+    bool is_crypt;
+    if (std::string(argv[3]) == "crypt") {
+        is_crypt = true;
+    } else if (std::string(argv[3]) == "decrypt") {
+        is_crypt = false;
+    } else {
+        std::cout << "Invalid 3-rd argument" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <input file> <output file> \"crypt\"/\"decrypt\""
+                  << std::endl;
+        exit(0);
+    }
+
     std::vector<uint32_t> cpu_id = hardware_identification::GetHWID();
     std::vector<uint8_t> hash_cpu;
     std::vector<uint8_t> hash_key;
@@ -44,13 +77,24 @@ int main() {
     CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::hashgen(&hash_key, str_password));
     PrintVectorUnsigned<uint8_t>(hash_key, "password hash by SHA1:");
 
-    const std::string pt =
-        "Hello, world! Password must contain more than 8 characters, at least:! We loop over all "
-        "sections in the ELF object. Function elf nextscn wil";
-    std::string ct;
-    encryptor::AbstractEncryptor::crypt(hash_key, pt, &ct);
-    std::cout << ct << std::endl;
-    encryptor::AbstractEncryptor::decrypt();
+    std::string plain_text;
+    std::string crypted_text;
+    // std::cout << pt << std::endl;
 
+    if (is_crypt) {
+        plain_text = ReadFile(argv[1]);
+        CRITICAL_ENCRYPTOR_CHECK(
+            encryptor::AbstractEncryptor::crypt(hash_key, plain_text, &crypted_text));
+
+        WriteFile(argv[2], crypted_text);
+
+    } else {
+        crypted_text = ReadFile(argv[1]);
+        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::decrypt());
+
+        WriteFile(argv[2], plain_text);
+    }
+
+    // std::cout << ct << std::endl;
     return 0;
 }
