@@ -5,6 +5,8 @@
 
 namespace encryptor {
 
+constexpr uint32_t SHA_MAX_LENGHT = SHA_DIGEST_LENGTH * sizeof(int);
+
 encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const std::string& pt,
                                           std::string* ct) {
     struct Column {
@@ -15,8 +17,7 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
     uint32_t keySize = key.size();
     uint32_t ptSize = pt.size();
     uint32_t clsNum = (ptSize < keySize ? ptSize : keySize);
-    if(clsNum)
-    {
+    if (clsNum) {
         return encryptor::Error::DATA_ERROR;
     }
 
@@ -76,17 +77,20 @@ encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash,
 
     uint32_t vector_size = reinterpret_key.size();
     unsigned char* key_data = new unsigned char[vector_size];
-    unsigned char* hash_data = new unsigned char[vector_size];
+    unsigned char* hash_data = new unsigned char[SHA_MAX_LENGHT];
 
     int i = 0;
     for (auto it = reinterpret_key.begin(); it != reinterpret_key.end(); ++it, ++i) {
         key_data[i] = *it;
+    }
+
+    for (int i = 0; i < SHA_MAX_LENGHT; ++i) {
         hash_data[i] = 0;
     }
 
     SHA1(key_data, vector_size, hash_data);
 
-    for (i = 0; i < vector_size; ++i) {
+    for (i = 0; i < SHA_MAX_LENGHT; ++i) {
         if (hash_data[i] != 0) {
             hash->push_back(hash_data[i]);
         }
@@ -105,19 +109,21 @@ encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash, const st
 
     uint32_t key_size = key.length();
     const unsigned char* key_data = reinterpret_cast<const unsigned char*>(key.c_str());
-    unsigned char* hash_data = new unsigned char[key_size];
+    unsigned char* hash_data = new unsigned char[SHA_MAX_LENGHT];
 
-    for (int i = 0; i < key_size; ++i) {
+    for (int i = 0; i < SHA_MAX_LENGHT; ++i) {
         hash_data[i] = 0;
     }
 
     SHA1(key_data, key_size, hash_data);
 
-    for (int i = 0; i < key_size; ++i) {
+    for (int i = 0; i < SHA_MAX_LENGHT; ++i) {
         if (hash_data[i] != 0) {
             hash->push_back(hash_data[i]);
         }
     }
+
+    delete[] hash_data;
 
     return encryptor::Error::CORRECT;
 }
