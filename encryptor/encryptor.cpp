@@ -10,49 +10,44 @@ constexpr uint32_t SHA_MAX_LENGHT = SHA_DIGEST_LENGTH * sizeof(int);
 
 encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const std::string& pt,
                                           std::string* ct) {
-    struct Column {
-        uint8_t num = 0;
-        std::vector<char> letters;
-    };
-
     uint32_t keySize = key.size();
     uint32_t ptSize = pt.size();
     uint32_t clsNum = (ptSize < keySize ? ptSize : keySize);
+    uint32_t curColumn = 0;
+    uint32_t curLetter = 0;
 
     if (!clsNum) {
-        std::cerr << "Size of key or text is zero" << std::endl;
+        std::cerr << "Size of the key or of the input text is zero" << std::endl;
         return encryptor::Error::DATA_ERROR;
     }
 
     std::vector<Column*> cls;
 
     for (uint32_t i = 0; i < clsNum; ++i) {
-        Column* tmp = new Column;
-        tmp->num = key[i];
-        cls.push_back(tmp);
+        Column* cl = new Column;
+        cl->num = key[i];
+        cls.push_back(cl);
     }
 
-    uint32_t cur = 0;
-    std::string text = pt;
-    for (int i = 0; i < (clsNum - ptSize % clsNum); i++) {
-        text.push_back('\0');
+    // hack to place source text in a rectangular table
+    std::string plainText = pt;
+    for (uint32_t i = 0; i < (clsNum - ptSize % clsNum); i++) {
+        plainText.push_back('\0');
     }
-    for (auto it : text) {
-        cls[cur]->letters.push_back(it);
-        cur++;
-        if (cur == clsNum) {
-            cur = 0;
-        }
+
+    curColumn = 0;
+    for (auto it : plainText) {
+        cls[curColumn]->data.push_back(it);
+        curColumn++;
+        curColumn %= clsNum;
     }
 
     std::sort(cls.begin(), cls.end(), [](Column* x, Column* y) { return x->num < y->num; });
 
-    uint32_t curColumn = 0;
-    uint32_t curLetter = 0;
-    for (uint32_t i = 0; i < text.size(); ++i) {
-        if (cls[curColumn]->letters.size() > curLetter) {
-            ct->push_back(cls[curColumn]->letters[curLetter]);
-        }
+    curColumn = 0;
+    curLetter = 0;
+    for (uint32_t i = 0; i < plainText.size(); ++i) {
+        ct->push_back(cls[curColumn]->data.at(curLetter));
         curColumn++;
         curColumn %= clsNum;
         if (curColumn == 0) {
@@ -69,72 +64,60 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
 
 encryptor::Error AbstractEncryptor::decrypt(const std::vector<uint8_t>& key, const std::string& ct,
                                             std::string* pt) {
-    struct Column {
-        uint8_t num = 0;
-        std::vector<char> letters;
-        bool isPrint = false;
-    };
-
     uint32_t keySize = key.size();
     uint32_t ctSize = ct.size();
     uint32_t clsNum = (ctSize < keySize ? ctSize : keySize);
+    uint32_t curColumn = 0;
+    uint32_t curLetter = 0;
+
     if (clsNum == 0) {
-        std::cerr << "Size of key or text is zero" << std::endl;
+        std::cerr << "Size of the key or of the input text is zero" << std::endl;
         return encryptor::Error::DATA_ERROR;
     }
 
     std::vector<Column*> cls;
 
+    // Generate partKey if the whole key wasn't used in the encryption
     std::vector<uint8_t> partKey;
     for (uint32_t i = 0; i < clsNum; ++i) {
         partKey.push_back(key[i]);
     }
     std::sort(partKey.begin(), partKey.end(), [](uint8_t x, uint8_t y) { return x < y; });
 
-    for (auto it : partKey) {
-        std::cout << (int)it << " ";
-    }
-    std::cout << std::endl;
-
     for (uint32_t i = 0; i < clsNum; ++i) {
-        Column* tmp = new Column;
-        tmp->num = partKey[i];
-        cls.push_back(tmp);
+        Column* cl = new Column;
+        cl->num = partKey[i];
+        cls.push_back(cl);
     }
 
-    uint32_t cur = 0;
+    curColumn = 0;
     for (auto it : ct) {
-        cls[cur]->letters.push_back(it);
-        cur++;
-        if (cur == clsNum) {
-            cur = 0;
-        }
+        cls[curColumn]->data.push_back(it);
+        curColumn++;
+        curColumn %= clsNum;
     }
 
     std::vector<Column*> decrCls;
     for (uint32_t i = 0; i < clsNum; ++i) {
         for (auto* it : cls) {
-            if (it->num == key[i] && it->isPrint == false) {
+            if (it->num == key[i] && it->isViewed == false) {
                 decrCls.push_back(it);
-                it->isPrint = true;
+                it->isViewed = true;
                 break;
             }
         }
     }
 
-    uint32_t curColumn = 0;
-    uint32_t curLetter = 0;
+    curColumn = 0;
+    curLetter = 0;
     for (uint32_t i = 0; i < ctSize; ++i) {
-        if (decrCls[curColumn]->letters.size() > curLetter) {
-            pt->push_back(decrCls[curColumn]->letters[curLetter]);
-        }
+        pt->push_back(decrCls[curColumn]->data.at(curLetter));
         curColumn++;
         curColumn %= clsNum;
         if (curColumn == 0) {
             curLetter++;
         }
     }
-    std::cout << pt->size() << std::endl;
     for (auto* i : cls) {
         delete i;
     }

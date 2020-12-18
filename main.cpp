@@ -83,14 +83,18 @@ int main(int argc, char** argv) {
 
     if (is_crypt) {
         plain_text = ReadFile(argv[1]);
-        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::crypt(hash_key, plain_text, &tmp_text));
-        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::crypt(hash_cpu, tmp_text, &crypted_text));
+        CRITICAL_ENCRYPTOR_CHECK(
+            encryptor::AbstractEncryptor::crypt(hash_key, plain_text, &tmp_text));
+        CRITICAL_ENCRYPTOR_CHECK(
+            encryptor::AbstractEncryptor::crypt(hash_cpu, tmp_text, &crypted_text));
         WriteFile(argv[2], crypted_text);
 
     } else {
         crypted_text = ReadFile(argv[1]);
-        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::decrypt(hash_cpu, crypted_text, &tmp_text));
-        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::decrypt(hash_key, tmp_text, &plain_text));
+        CRITICAL_ENCRYPTOR_CHECK(
+            encryptor::AbstractEncryptor::decrypt(hash_cpu, crypted_text, &tmp_text));
+        CRITICAL_ENCRYPTOR_CHECK(
+            encryptor::AbstractEncryptor::decrypt(hash_key, tmp_text, &plain_text));
         WriteFile(argv[2], plain_text);
     }
 

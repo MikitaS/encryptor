@@ -37,6 +37,12 @@ namespace encryptor {
 
 enum Error { CORRECT, KEY_ERROR, DATA_ERROR };
 
+struct Column {
+    uint8_t num = 0;         // byte from sha key
+    std::vector<char> data;  // letters
+    bool isViewed = false;   // mark passed column in decrypt algo
+};
+
 class AbstractEncryptor {
    public:
     static encryptor::Error crypt(const std::vector<uint8_t>& key, const std::string& pt,
