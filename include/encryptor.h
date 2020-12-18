@@ -41,7 +41,8 @@ class AbstractEncryptor {
    public:
     static encryptor::Error crypt(const std::vector<uint8_t>& key, const std::string& pt,
                                   std::string* ct);
-    static encryptor::Error decrypt();
+    static encryptor::Error decrypt(const std::vector<uint8_t>& key, const std::string& ct,
+                                    std::string* pt);
 
     static encryptor::Error hashgen(std::vector<uint8_t>* hash, const std::vector<uint32_t>& key);
     static encryptor::Error hashgen(std::vector<uint8_t>* hash, const std::string& key);

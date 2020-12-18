@@ -1,5 +1,6 @@
 #include "encryptor.h"
 
+#include <algorithm>
 #include <cassert>
 #include <list>
 
@@ -17,7 +18,9 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
     uint32_t keySize = key.size();
     uint32_t ptSize = pt.size();
     uint32_t clsNum = (ptSize < keySize ? ptSize : keySize);
+
     if (!clsNum) {
+        std::cerr << "Size of key or text is zero" << std::endl;
         return encryptor::Error::DATA_ERROR;
     }
 
@@ -30,7 +33,11 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
     }
 
     uint32_t cur = 0;
-    for (auto it : pt) {
+    std::string text = pt;
+    for (int i = 0; i < (clsNum - ptSize % clsNum); i++) {
+        text.push_back('\0');
+    }
+    for (auto it : text) {
         cls[cur]->letters.push_back(it);
         cur++;
         if (cur == clsNum) {
@@ -38,12 +45,18 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
         }
     }
 
-    std::list<Column*> myList(cls.begin(), cls.end());
-    myList.sort([](Column* x, Column* y) { return x->num < y->num; });
+    std::sort(cls.begin(), cls.end(), [](Column* x, Column* y) { return x->num < y->num; });
 
-    for (auto* i : myList) {
-        for (auto j : i->letters) {
-            ct->push_back(j);
+    uint32_t curColumn = 0;
+    uint32_t curLetter = 0;
+    for (uint32_t i = 0; i < text.size(); ++i) {
+        if (cls[curColumn]->letters.size() > curLetter) {
+            ct->push_back(cls[curColumn]->letters[curLetter]);
+        }
+        curColumn++;
+        curColumn %= clsNum;
+        if (curColumn == 0) {
+            curLetter++;
         }
     }
 
@@ -53,7 +66,80 @@ encryptor::Error AbstractEncryptor::crypt(const std::vector<uint8_t>& key, const
 
     return encryptor::Error::CORRECT;
 }
-encryptor::Error AbstractEncryptor::decrypt() { return encryptor::Error::CORRECT; }
+
+encryptor::Error AbstractEncryptor::decrypt(const std::vector<uint8_t>& key, const std::string& ct,
+                                            std::string* pt) {
+    struct Column {
+        uint8_t num = 0;
+        std::vector<char> letters;
+        bool isPrint = false;
+    };
+
+    uint32_t keySize = key.size();
+    uint32_t ctSize = ct.size();
+    uint32_t clsNum = (ctSize < keySize ? ctSize : keySize);
+    if (clsNum == 0) {
+        std::cerr << "Size of key or text is zero" << std::endl;
+        return encryptor::Error::DATA_ERROR;
+    }
+
+    std::vector<Column*> cls;
+
+    std::vector<uint8_t> partKey;
+    for (uint32_t i = 0; i < clsNum; ++i) {
+        partKey.push_back(key[i]);
+    }
+    std::sort(partKey.begin(), partKey.end(), [](uint8_t x, uint8_t y) { return x < y; });
+
+    for (auto it : partKey) {
+        std::cout << (int)it << " ";
+    }
+    std::cout << std::endl;
+
+    for (uint32_t i = 0; i < clsNum; ++i) {
+        Column* tmp = new Column;
+        tmp->num = partKey[i];
+        cls.push_back(tmp);
+    }
+
+    uint32_t cur = 0;
+    for (auto it : ct) {
+        cls[cur]->letters.push_back(it);
+        cur++;
+        if (cur == clsNum) {
+            cur = 0;
+        }
+    }
+
+    std::vector<Column*> decrCls;
+    for (uint32_t i = 0; i < clsNum; ++i) {
+        for (auto* it : cls) {
+            if (it->num == key[i] && it->isPrint == false) {
+                decrCls.push_back(it);
+                it->isPrint = true;
+                break;
+            }
+        }
+    }
+
+    uint32_t curColumn = 0;
+    uint32_t curLetter = 0;
+    for (uint32_t i = 0; i < ctSize; ++i) {
+        if (decrCls[curColumn]->letters.size() > curLetter) {
+            pt->push_back(decrCls[curColumn]->letters[curLetter]);
+        }
+        curColumn++;
+        curColumn %= clsNum;
+        if (curColumn == 0) {
+            curLetter++;
+        }
+    }
+    std::cout << pt->size() << std::endl;
+    for (auto* i : cls) {
+        delete i;
+    }
+    return encryptor::Error::CORRECT;
+}
 
 encryptor::Error AbstractEncryptor::hashgen(std::vector<uint8_t>* hash,
                                             const std::vector<uint32_t>& key) {
