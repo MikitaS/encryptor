@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     } else {
         crypted_text = ReadFile(argv[1]);
-        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::decrypt());
+        CRITICAL_ENCRYPTOR_CHECK(encryptor::AbstractEncryptor::decrypt(hash_key, crypted_text, &plain_text));
 
         WriteFile(argv[2], plain_text);
     }
